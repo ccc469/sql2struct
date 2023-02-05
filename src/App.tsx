@@ -1,5 +1,5 @@
 import { IconSetting } from '@douyinfe/semi-icons'
-import { Button } from '@douyinfe/semi-ui'
+import { Button,Toast } from '@douyinfe/semi-ui'
 import { useEffect, useState } from 'react'
 import './App.less'
 import Editor from './components/editor/Editor'
@@ -11,6 +11,7 @@ import { genGoStructCode } from './core/gostruct'
 import { defaultFieldMaps, defaultGoStructOptions, defaultGoStructTags, defaultSpecialIdentifiers } from './core/option'
 import { pregSqlStatement } from './core/sql'
 import { SqlTable } from './core/type'
+import copy from 'copy-to-clipboard'
 
 export default () => {
   const [sqlCode, setSqlCode] = useState(``)
@@ -49,6 +50,10 @@ export default () => {
       return
     }
     setGoStructCode(code)
+
+    // copy to clipboard
+    copy(code)
+    Toast.success({content:'Copy to clipboard !!!', showClose: false})
   }
 
   // after sql code changed
@@ -82,10 +87,10 @@ export default () => {
   }, [fieldMaps])
 
   // componentDidMount
-  useEffect(() => {
-    // load demo sql
-    setSqlCode(demoSql)
-  }, [])
+  // useEffect(() => {
+  //   // load demo sql
+  //   setSqlCode(demoSql)
+  // }, [])
 
   return (
     <div className="app">

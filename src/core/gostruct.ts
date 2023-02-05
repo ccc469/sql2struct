@@ -1,5 +1,5 @@
 import { GoStruct, GoStructField, kv, SqlField, SqlTable } from './type'
-import { camelCase } from './util'
+import { camelCase, CamelType } from './util'
 
 // get go struct field type from sql field type
 export const getGoStructFieldType = (sqlFieldType: string, fieldMaps: kv): string | null => {
@@ -17,10 +17,14 @@ export const toGoStruct = (sqlTable: SqlTable, tags: Array<string>, specialIdent
   sqlTable.fields.forEach((sqlField: SqlField) => {
     const tagKv: kv = {}
     tags.forEach((tag) => {
-      tagKv[tag] = sqlField.name
+      if (tag === 'gorm') {
+        tagKv[tag] = `column:${sqlField.name}`
+      } else {
+        tagKv[tag] = camelCase(sqlField.name, CamelType.Camel)
+      }
     })
     const field: GoStructField = {
-      name: specialIdentifiers.includes(sqlField.name) ? sqlField.name.toUpperCase() : camelCase(sqlField.name),
+      name: specialIdentifiers.includes(sqlField.name) ? sqlField.name.toUpperCase() : camelCase(sqlField.name, CamelType.UpperCamel),
       type: getGoStructFieldType(sqlField.type, fieldMaps) as string,
       comment: sqlField.comment,
       tags: tagKv,
@@ -29,7 +33,7 @@ export const toGoStruct = (sqlTable: SqlTable, tags: Array<string>, specialIdent
   })
 
   const struct: GoStruct = {
-    name: camelCase(sqlTable.name),
+    name: camelCase(sqlTable.name, CamelType.UpperCamel),
     fields,
     comment: sqlTable.comment,
   }
