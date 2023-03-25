@@ -1,5 +1,5 @@
 import { IconSetting } from '@douyinfe/semi-icons'
-import { Button,Toast } from '@douyinfe/semi-ui'
+import { Button, Toast, RadioGroup, Radio } from '@douyinfe/semi-ui'
 import { useEffect, useState } from 'react'
 import './App.less'
 import Editor from './components/editor/Editor'
@@ -27,6 +27,8 @@ export default () => {
 
   const [fieldMaps, setFieldMaps] = useState(defaultFieldMaps)
 
+  const [caseStyle, setCaseStyle] = useState(2)
+
   // go struct option change handler
   const goStructOptionOnChange = (tags: string[]) => {
     setGoStructTags(tags)
@@ -37,13 +39,17 @@ export default () => {
     setSqlCode(code)
   }
 
+  const caseStyleOnChange = (e: any) => {
+    setCaseStyle(e.target.value)
+  }
+
   // render go struct code
   const renderGoStructCode = () => {
     if (!sqlTable || !sqlTable.name || !sqlTable.fields) {
       setGoStructCode(`invalid sql`)
       return
     }
-    const code = genGoStructCode(sqlTable, goStructTags, specialIdentifiers, fieldMaps)
+    const code = genGoStructCode(sqlTable, goStructTags, specialIdentifiers, fieldMaps, caseStyle)
     if (!code) {
       setGoStructCode(`gen go struct failed`)
       return
@@ -85,6 +91,9 @@ export default () => {
     renderGoStructCode()
   }, [fieldMaps])
 
+  useEffect(() => {
+    renderGoStructCode()
+  }, [caseStyle])
   // componentDidMount
   // useEffect(() => {
   //   // load demo sql
@@ -116,6 +125,14 @@ export default () => {
             <a href="https://github.com/idoubi/sql2struct.git" target="_blank" className="github">
               <img src="https://img.shields.io/github/stars/idoubi/sql2struct.svg" alt="github stars" />
             </a>
+            <div style={{ display: 'inline-block', float: 'right' }}>
+              <span style={{ marginRight: '10px' }}>(只对json属性有效)</span>
+              <RadioGroup onChange={caseStyleOnChange} value={caseStyle} aria-label="单选组合示例" name="demo-radio-group">
+                <Radio value={1}>大 (驼峰) </Radio>
+                <Radio value={2}>小 (驼峰) </Radio>
+                <Radio value={3}>下划线</Radio>
+              </RadioGroup>
+            </div>
           </div>
         </div>
         <div className="main">

@@ -12,7 +12,13 @@ export const getGoStructFieldType = (sqlFieldType: string, fieldMaps: kv): strin
 }
 
 // transfer sql table to go struct
-export const toGoStruct = (sqlTable: SqlTable, tags: Array<string>, specialIdentifiers: Array<string>, fieldMaps: kv): GoStruct | null => {
+export const toGoStruct = (
+  sqlTable: SqlTable,
+  tags: Array<string>,
+  specialIdentifiers: Array<string>,
+  fieldMaps: kv,
+  caseStyle: number
+): GoStruct | null => {
   const fields: Array<GoStructField> = []
   sqlTable.fields.forEach((sqlField: SqlField) => {
     const tagKv: kv = {}
@@ -20,7 +26,21 @@ export const toGoStruct = (sqlTable: SqlTable, tags: Array<string>, specialIdent
       if (tag === 'gorm') {
         tagKv[tag] = `column:${sqlField.name}`
       } else {
-        tagKv[tag] = camelCase(sqlField.name, CamelType.Camel)
+        if (tag === 'json') {
+          switch (caseStyle) {
+            case 1:
+              tagKv[tag] = camelCase(sqlField.name, CamelType.UpperCamel)
+              break;
+            case 2:
+              tagKv[tag] = camelCase(sqlField.name, CamelType.Camel)
+              break;
+            default:
+              tagKv[tag] = sqlField.name
+              break;
+          }
+        } else {
+          tagKv[tag] = camelCase(sqlField.name, CamelType.Camel)
+        }
       }
     })
     const field: GoStructField = {
@@ -73,9 +93,10 @@ export const genGoStructCode = (
   sqlTable: SqlTable,
   tags: Array<string>,
   specialIdentifiers: Array<string>,
-  fieldMaps: kv
+  fieldMaps: kv,
+  caseStyle: number
 ): string | null => {
-  const goSturct = toGoStruct(sqlTable, tags, specialIdentifiers, fieldMaps)
+  const goSturct = toGoStruct(sqlTable, tags, specialIdentifiers, fieldMaps, caseStyle)
   if (!goSturct) {
     return null
   }
